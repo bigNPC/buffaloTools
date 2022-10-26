@@ -208,6 +208,7 @@ public class JsonService extends CommonPanelService implements IFunctionHandle {
                 printString.setText("成功");
                 Desktop.getDesktop().open(new File(JsonGen));
             } catch (Exception e1) {
+                e1.printStackTrace();
                 System.out.println(e1.getMessage());
                 printString.setText("非Json格式");
             } finally {
@@ -287,7 +288,7 @@ public class JsonService extends CommonPanelService implements IFunctionHandle {
         if(CollectionUtils.isEmpty(nameTypeMap)){
             return;
         }
-        files.add(new JsonGenFile(javaName, parentName,  nameTypeMap, hasList));
+        files.add(new JsonGenFile(CommonServiceUtil.getStartStringUp(javaName), parentName,  nameTypeMap, hasList));
     }
     private static JSONObject getMaxFieldObject(JSONArray array) {
         int maxFieldLength = 0;
@@ -296,12 +297,17 @@ public class JsonService extends CommonPanelService implements IFunctionHandle {
             if(object == null){
                 continue;
             }
-            if(object.getClass().getDeclaredFields().length > maxFieldLength){
-                maxFieldLength = object.getClass().getDeclaredFields().length;
+            int length = object.getClass().getDeclaredFields().length;
+            if(length > maxFieldLength){
+                maxFieldLength = length;
                 maxFieldObject = object;
             }
         }
-        return (JSONObject)maxFieldObject;
+        if(maxFieldObject instanceof JSONArray){
+            return getMaxFieldObject((JSONArray)maxFieldObject);
+        }else{
+            return (JSONObject)maxFieldObject;
+        }
     }
     public static String getJavaContent(String className, Map<String, String> nameTypeMap, String packageName, boolean hasList){
         List<String> list = new ArrayList<>();
